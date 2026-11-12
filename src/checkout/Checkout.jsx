@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { breeds, colors, fixture, issueDemoPolicy, planIds, savePolicy, validateProfile } from './demo'
 import { downloadPdf, makeDocuments } from './documents'
 
-export const money = amount => new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(amount)
-export const fieldClass = 'block w-full mt-1 rounded-xl border border-sage-300 bg-white p-3 focus:outline-sage-500'
-export const actionClass = 'btn-primary disabled:opacity-50'
+import { actionClass, fieldClass } from './ui'
+import PaymentForm from './PaymentForm'
+
 export function Shell({title,children}) {
   return <main className="min-h-screen bg-cream-100 px-4 py-8 sm:py-12 text-sage-900">
     <div className="max-w-3xl mx-auto">
@@ -45,29 +45,43 @@ export default function Checkout({planIndex, plans, onIssue}) {
   const [profile,setProfile]=useState({owner:'',email:'',dog:'',breed:'',color:''})
   const [step,setStep]=useState('profile')
   const [term,setTerm]=useState('monthly')
-  const [accepted,setAccepted]=useState(false)
+  const [scenario, setScenario] = useState('approved')
   const [busy,setBusy]=useState(false)
   const [error,setError]=useState('')
-  const [result,setResult]=useState(null)
   const pending=useRef(false)
   const section=useRef(null)
   useEffect(()=>{ section.current?.querySelector('[data-step-title]')?.focus() },[step])
   const bind=name=>({name,value:profile[name],onChange:e=>setProfile(current=>({...current,[name]:e.target.value})),className:fieldClass,required:true})
   async function confirm(event) {
     event.preventDefault()
-    if (!accepted || pending.current) return
-    pending.current=true
-    setBusy(true);setError('')
+    if (pending.current) return
+    if (scenario === 'declined') {
+      setError('Pago de prueba rechazado. Selecciona la tarjeta de aprobación para reintentar.')
+      return
+    }
+
+    const checkoutRoute = location.hash
+    pending.current = true
+    setBusy(true)
+    setError('')
     try {
-      const policy=issueDemoPolicy({profile,planId:planIds[planIndex],planName:plan.name,monthlyPrice,term})
-      const docs=await makeDocuments(policy)
+      const policy = issueDemoPolicy({ profile, planId: planIds[planIndex], planName: plan.name, monthlyPrice, term })
+      const docs = await makeDocuments(policy)
+      if (location.hash !== checkoutRoute) return
+
       savePolicy(policy)
-      onIssue(policy)
-      setResult({policy,docs})
-      setStep('issued')
-    } catch (e) {
-      setError(e instanceof DOMException ? 'Habilita el almacenamiento de sesión para guardar la prueba.' : 'No pudimos completar la emisión. Revisa los datos y vuelve a intentar.')
-    } finally {pending.current=false;setBusy(false)}
+      onIssue(policy, docs)
+      try {
+        downloadPdf(docs.policy, policy.policyId + '.pdf')
+      } finally {
+        location.hash = 'cliente'
+      }
+    } catch {
+      setError('No pudimos completar la emisión. Revisa los datos y vuelve a intentar.')
+    } finally {
+      pending.current = false
+      setBusy(false)
+    }
   }
   return <Shell title={'Contratar · '+plan.name}>
     <div ref={section} className="space-y-4">
@@ -85,30 +99,19 @@ export default function Checkout({planIndex, plans, onIssue}) {
           <div className="sm:col-span-2"><button className={actionClass}>Continuar al checkout</button></div>
         </form>
       </>}
-      {step==='payment' && <form className="space-y-4" onSubmit={confirm}>
-        <h2 data-step-title tabIndex={-1} className="text-xl">2. Revisar y pagar en modo de prueba</h2>
-        <p>{profile.owner} · {profile.dog} ({profile.breed}, {profile.color}) · {profile.email}</p>
-        <fieldset className="space-y-2" disabled={busy}>
-          <legend className="font-semibold mb-2">Vigencia del plan</legend>
-          <label className="block"><input type="radio" name="term" value="monthly" checked={term==='monthly'} onChange={()=>setTerm('monthly')}/> Mensual · {money(monthlyPrice)} MXN</label>
-          <label className="block"><input type="radio" name="term" value="annual" checked={term==='annual'} onChange={()=>setTerm('annual')}/> Anual · {money(monthlyPrice*12)} MXN</label>
-        </fieldset>
-        <p className="rounded-xl bg-sage-50 p-4 font-semibold">Total simulado: {money(monthlyPrice*(term==='annual'?12:1))} MXN</p>
-        <label className="block"><input type="checkbox" required checked={accepted} disabled={busy} onChange={e=>setAccepted(e.target.checked)}/> Entiendo que el pago y la póliza son de prueba.</label>
-        <div className="flex flex-wrap gap-3"><button type="button" className="btn-outline" disabled={busy} onClick={()=>{setError('');setAccepted(false);setStep('profile')}}>Editar datos</button>
-          <button disabled={busy||!accepted} className={actionClass}>{busy?'Preparando póliza y carnet…':'Simular pago y emitir'}</button></div>
-      </form>}
-      {step==='issued' && <div className="space-y-4">
-        <h2 data-step-title tabIndex={-1} className="text-xl">3. Póliza emitida para {result.policy.dog}</h2>
-        <p role="status">Pago simulado aprobado. Tus dos PDF están listos.</p>
-        <dl className="space-y-2 rounded-xl bg-sage-50 p-4 break-words">
-          <div><dt className="font-semibold">Folio</dt><dd>{result.policy.policyId}</dd></div>
-          <div><dt className="font-semibold">ID del titular</dt><dd>{result.policy.memberId}</dd></div>
-          <div><dt className="font-semibold">Vigencia</dt><dd>{result.policy.started} a {result.policy.expires} (fin exclusivo)</dd></div>
-        </dl>
-        <Documents policy={result.policy} initial={result.docs}/>
-        <a href="#cliente" className="inline-block underline">Continuar al portal cliente</a>
-      </div>}
+      {step === 'payment' && (
+        <PaymentForm
+          profile={profile}
+          monthlyPrice={monthlyPrice}
+          term={term}
+          setTerm={setTerm}
+          scenario={scenario}
+          setScenario={value => { setScenario(value); setError('') }}
+          busy={busy}
+          onBack={() => { setError(''); setStep('profile') }}
+          onSubmit={confirm}
+        />
+      )}
     </div>
   </Shell>
 }

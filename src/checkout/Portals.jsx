@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { actionClass, Documents, fieldClass, Shell } from './Checkout'
+import { Documents, Shell } from './Checkout'
+import { actionClass, fieldClass, money } from './ui'
 import { credentialUrl, distanceMeters, resolveCredential } from './demo'
 
-export function ClientPortal({policy,onClear}) {
+export function ClientPortal({ policy, issuedDocs, onClear }) {
   return <Shell title="Portal cliente de prueba">
     {policy ? <div className="space-y-5">
       <p><strong>{policy.dog}</strong> · {policy.breed} · {policy.color} · Póliza de prueba hasta {policy.expires}</p>
-      <Documents key={policy.policyId} policy={policy}/>
+      {issuedDocs && (
+        <div role="status" className="rounded-xl border border-sage-200 bg-sage-50 p-4">
+          <p className="font-semibold"><span aria-hidden="true">✓ </span>Pago de prueba aprobado</p>
+          <p className="mt-1 text-sm">{money(policy.total)} MXN · Folio {policy.policyId}</p>
+          <p className="mt-2 text-sm">Puedes volver a descargar la póliza o guardar el carnet con QR desde aquí.</p>
+        </div>
+      )}
+      <Documents key={policy.policyId} policy={policy} initial={issuedDocs} />
       <a className="underline block" href={credentialUrl(policy)}>Abrir el enlace de identificación del QR</a>
       <Adventures key={policy.policyId}/>
       <button className="underline text-sm" onClick={onClear}>Cerrar sesión de prueba y borrar los datos de esta pestaña</button>

@@ -17,6 +17,7 @@ export default function App() {
   const t = translations[lang]
   const [hash, setHash] = useState(location.hash)
   const [policy, setPolicy] = useState(() => readPolicy())
+  const [issuedDocs, setIssuedDocs] = useState(null)
   useEffect(() => {
     const update = () => setHash(location.hash)
     addEventListener('hashchange', update)
@@ -33,8 +34,8 @@ export default function App() {
       document.getElementById('plans')?.scrollIntoView()
     }
   }, [hash,isDemoRoute])
-  if (planIndex >= 0) return <Checkout key={hash} planIndex={planIndex} plans={translations.es.plans.items} onIssue={setPolicy}/>
-  if (hash === '#cliente') return <ClientPortal policy={policy} onClear={()=>{clearPolicy();setPolicy(null)}}/>
+  if (planIndex >= 0) return <Checkout key={hash} planIndex={planIndex} plans={translations.es.plans.items} onIssue={(issuedPolicy, docs) => { setPolicy(issuedPolicy); setIssuedDocs(docs) }}/>
+  if (hash === '#cliente') return <ClientPortal policy={policy} issuedDocs={issuedDocs} onClear={() => { clearPolicy(); setPolicy(null); setIssuedDocs(null) }}/>
   if (hash === '#veterinaria' || params.has('credencial')) return <VetPortal key={hash} policy={policy} initialToken={params.get('credencial')||''}/>
 
   return (
