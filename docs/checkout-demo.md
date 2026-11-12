@@ -1,8 +1,8 @@
 # PetCare: recorrido de contratación de prueba
 
-Desde un plan o el cotizador: datos ficticios del titular y del perro → checkout mensual/anual → formulario con tarjetas de prueba → aprobación o rechazo local → descarga de póliza → portal cliente con carnet QR. El ID de titular es distinto del folio; renovar genera otro folio. La vigencia termina en fecha exclusiva de Ciudad de México. Los precios son ejemplos y el anual equivale a doce mensualidades.
+Desde un plan o el cotizador: datos ficticios del titular y del perro → checkout mensual/anual → formulario con tarjetas de prueba → aprobación o rechazo local → descarga de póliza → pantalla de bienvenida → Inicia con tus beneficios → portal cliente con carnet QR. El ID de titular es distinto del folio; renovar genera otro folio. La vigencia termina en fecha exclusiva de Ciudad de México. Los precios son ejemplos y el anual equivale a doce mensualidades.
 
-Esta landing no tiene una API desplegada. La vista previa guarda la última póliza en el almacenamiento de sesión; el QR contiene una referencia aleatoria, que solo se puede resolver donde exista esa misma sesión. El GPS y las fotos se mantienen en memoria. La vista veterinaria demuestra la decisión en/fuera de red con un convenio de prueba elegido para ese escenario. No hay verificación de identidad, vínculo real de clínica, pagos ni intercambio social.
+Esta landing no tiene una API desplegada. La vista previa guarda la última póliza en el almacenamiento de sesión; el QR contiene una referencia aleatoria, que solo se puede resolver donde exista esa misma sesión. La vista veterinaria demuestra la decisión en/fuera de red con un convenio de prueba elegido para ese escenario. No hay verificación de identidad, vínculo real de clínica, pagos ni intercambio social.
 
 ## Siguiente integración con la API .NET y SQL Server
 

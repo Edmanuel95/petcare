@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { addMonths, fixture, issueDemoPolicy, readPolicy, savePolicy, resolveCredential, credentialUrl, validateProfile, distanceMeters } from '../src/checkout/demo.js'
+import { addMonths, fixture, issueDemoPolicy, readPolicy, savePolicy, resolveCredential, credentialUrl, validateProfile } from '../src/checkout/demo.js'
 const storage=()=>{const m=new Map();return {getItem:k=>m.get(k),setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k)}}
 const payload={profile:fixture,planId:'basico',planName:'Básico',monthlyPrice:599,term:'monthly'}
 test('vigencias de calendario y fin exclusivo',()=>{
@@ -33,6 +33,4 @@ test('rechaza datos que salen del contrato de la demo',()=>{
   assert.ok(validateProfile({...fixture,owner:' '}))
   assert.throws(()=>issueDemoPolicy({...payload,term:'weekly'},storage()))
   assert.throws(()=>issueDemoPolicy({...payload,monthlyPrice:0},storage()))
-  assert.equal(distanceMeters({lat:0,lng:0},{lat:0,lng:0}),0)
-  assert.ok(distanceMeters({lat:0,lng:0},{lat:0,lng:.001})>110)
 })

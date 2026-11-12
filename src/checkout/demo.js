@@ -55,9 +55,3 @@ export function resolveCredential(token, policy, today = dateInMexico()) {
   if (!policy || policy.credential !== token) return {status:'unavailable'}
   return {status:today >= policy.expires ? 'expired' : 'active',dog:policy.dog,breed:policy.breed,color:policy.color,expires:policy.expires}
 }
-export function distanceMeters(a,b) {
-  const rad = Math.PI/180
-  const lat = (b.lat-a.lat)*rad, lng = (b.lng-a.lng)*rad
-  const h = Math.sin(lat/2)**2 + Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(lng/2)**2
-  return 6371000*2*Math.asin(Math.sqrt(Math.min(1,h)))
-}

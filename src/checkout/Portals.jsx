@@ -1,47 +1,28 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Documents, Shell } from './Checkout'
-import { actionClass, fieldClass, money } from './ui'
-import { credentialUrl, distanceMeters, resolveCredential } from './demo'
+import { actionClass, fieldClass } from './ui'
+import { credentialUrl, resolveCredential } from './demo'
 
-export function ClientPortal({ policy, issuedDocs, section, onClear }) {
-  const showAdventures = section === 'adventures'
-
+export function ClientPortal({ policy, issuedDocs, onClear }) {
   return (
     <Shell title="Portal del cliente">
-      <nav aria-label="Secciones del portal" className="mb-5 flex flex-wrap gap-3">
-        <a href="#cliente" aria-current={!showAdventures ? 'page' : undefined} className={!showAdventures ? 'btn-primary' : 'btn-outline'}>
-          Mi póliza y carnet
-        </a>
-        <a href="#cliente/aventuras" aria-current={showAdventures ? 'page' : undefined} className={showAdventures ? 'btn-primary' : 'btn-outline'}>
-          Mis aventuras
-        </a>
-      </nav>
-
       {policy ? (
         <div className="space-y-5">
-          <p><strong>{policy.dog}</strong> · {policy.breed} · {policy.color} · Póliza de prueba hasta {policy.expires}</p>
-          <section hidden={showAdventures} aria-labelledby="client-documents">
-            <h2 id="client-documents" className="mb-3 text-xl">Mis documentos</h2>
-            {issuedDocs && (
-              <div role="status" className="mb-4 rounded-xl border border-sage-200 bg-sage-50 p-4">
-                <p className="font-semibold"><span aria-hidden="true">✓ </span>Pago de prueba aprobado</p>
-                <p className="mt-1 text-sm">{money(policy.total)} MXN · Folio {policy.policyId}</p>
-              </div>
-            )}
+          <div className="rounded-2xl bg-sage-900 p-5 text-white sm:p-6">
+            <p className="text-sm text-cream-200">Plan {policy.planName} · Póliza de prueba</p>
+            <h2 className="mt-1 break-words font-display text-3xl">{policy.dog}</h2>
+            <p className="mt-2 text-sm text-cream-100">{policy.breed} · {policy.color} · Vigencia hasta {policy.expires}</p>
+          </div>
+          <section aria-labelledby="client-documents">
+            <h2 id="client-documents" className="mb-3 text-xl">Mi póliza y carnet</h2>
             <Documents key={policy.policyId} policy={policy} initial={issuedDocs} />
             <a className="mt-3 inline-block underline" href={credentialUrl(policy)}>Abrir el enlace de identificación del QR</a>
-            <div className="mt-5 border-t border-sage-100 pt-4">
-              <a href="#cliente/aventuras" className="btn-outline">Iniciar aventura</a>
-            </div>
           </section>
-          <div hidden={!showAdventures}>
-            <Adventures key={policy.policyId} />
-          </div>
           <button className="underline text-sm" onClick={onClear}>Cerrar sesión de prueba y borrar los datos de esta pestaña</button>
         </div>
       ) : (
         <div className="space-y-4">
-          <p>Emite una póliza de prueba en esta pestaña para descargar tus documentos y registrar aventuras.</p>
+          <p>Emite una póliza de prueba en esta pestaña para descargar tus documentos.</p>
           <a className="btn-primary" href="#plans">Elegir un plan de prueba</a>
         </div>
       )}
@@ -85,67 +66,4 @@ export function VetPortal({policy,initialToken=''}) {
       </>}
     </div>}
   </Shell>
-}
-
-function Adventures() {
-  const watch=useRef(null)
-  const last=useRef(null)
-  const start=useRef(0)
-  const distance=useRef(0)
-  const photoUrls=useRef(new Set())
-  const [tracking,setTracking]=useState(false)
-  const [meters,setMeters]=useState(0)
-  const [fixes,setFixes]=useState(0)
-  const [error,setError]=useState('')
-  const [photo,setPhoto]=useState(null)
-  const [walks,setWalks]=useState([])
-  useEffect(()=>()=> {
-    if(watch.current!==null) navigator.geolocation.clearWatch(watch.current)
-    for(const url of photoUrls.current) URL.revokeObjectURL(url)
-  },[])
-  function begin() {
-    if (!navigator.geolocation) {setError('Este navegador no ofrece GPS.');return}
-    if(watch.current!==null) return
-    setError('');setFixes(0);setMeters(0);distance.current=0;last.current=null;start.current=Date.now();setTracking(true)
-    watch.current=navigator.geolocation.watchPosition(({coords})=>{
-      if (coords.accuracy > 65) return
-      const point={lat:coords.latitude,lng:coords.longitude}
-      if(last.current) {
-        const delta=distanceMeters(last.current,point)
-        if(delta<8) return
-        distance.current+=delta
-        setMeters(Math.round(distance.current))
-      }
-      last.current=point
-      setFixes(n=>n+1)
-    },()=>setError('No se recibió ubicación. Revisa el permiso de GPS y la señal.'),{enableHighAccuracy:true,maximumAge:0,timeout:15000})
-  }
-  function stop() {
-    if (watch.current===null) return
-    navigator.geolocation.clearWatch(watch.current);watch.current=null;setTracking(false)
-    const url=photo ? URL.createObjectURL(photo) : ''
-    if(url) photoUrls.current.add(url)
-    setWalks(current=>[{
-      id:crypto.randomUUID(),minutes:Math.round((Date.now()-start.current)/60000),
-      meters:fixes>=2?Math.round(distance.current):null,url
-    },...current])
-    last.current=null;setPhoto(null)
-  }
-  return <section className="border-t border-sage-100 pt-5 space-y-3">
-    <h2 className="text-xl">Aventuras con GPS</h2>
-    <p>La distancia es aproximada. La ubicación y las fotos se quedan en esta pantalla; puedes probar con una imagen de ejemplo.</p>
-    <label className="block">Foto opcional<input type="file" accept="image/jpeg,image/png,image/webp" className={fieldClass} key={walks.length} onChange={e=>{
-      const file=e.target.files?.[0]
-      if(file && (!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5000000)) {
-        setError('Elige JPG, PNG o WebP de hasta 5 MB.');e.target.value='';setPhoto(null);return
-      }
-      setError('');setPhoto(file||null)
-    }}/></label>
-    {tracking ? <button className={actionClass} onClick={stop}>Terminar aventura · {meters} m</button> : <button className={actionClass} onClick={begin}>Activar GPS y empezar</button>}
-    {error && <p role="status" className="text-red-800">{error}</p>}
-    {walks.length>0 && <ul className="space-y-2">{walks.map(w=><li key={w.id} className="rounded-lg bg-sage-50 p-3">
-      {w.minutes} min · {w.meters===null?'distancia sin señal suficiente':w.meters+' m'}
-      {w.url && <img src={w.url} className="mt-2 max-h-48 rounded-lg" alt="Foto de la aventura"/>}
-    </li>)}</ul>}
-  </section>
 }

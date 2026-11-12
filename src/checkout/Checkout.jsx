@@ -4,6 +4,7 @@ import { downloadPdf, makeDocuments } from './documents'
 
 import { actionClass, fieldClass } from './ui'
 import PaymentForm from './PaymentForm'
+import CheckoutConfirmation from './CheckoutConfirmation'
 
 export function Shell({title,children}) {
   return <main className="min-h-screen bg-cream-100 px-4 py-8 sm:py-12 text-sage-900">
@@ -46,6 +47,7 @@ export default function Checkout({planIndex, plans, onIssue}) {
   const [step,setStep]=useState('profile')
   const [term,setTerm]=useState('monthly')
   const [scenario, setScenario] = useState('approved')
+  const [confirmation, setConfirmation] = useState(null)
   const [busy,setBusy]=useState(false)
   const [error,setError]=useState('')
   const pending=useRef(false)
@@ -71,10 +73,12 @@ export default function Checkout({planIndex, plans, onIssue}) {
 
       savePolicy(policy)
       onIssue(policy, docs)
+      setConfirmation({ policy, documents: docs })
+      setStep('confirmed')
       try {
         downloadPdf(docs.policy, policy.policyId + '.pdf')
-      } finally {
-        location.hash = 'cliente'
+      } catch {
+        // The confirmation keeps a download button if the browser blocks the automatic download.
       }
     } catch {
       setError('No pudimos completar la emisión. Revisa los datos y vuelve a intentar.')
@@ -83,7 +87,7 @@ export default function Checkout({planIndex, plans, onIssue}) {
       setBusy(false)
     }
   }
-  return <Shell title={'Contratar · '+plan.name}>
+  return <Shell title={step === 'confirmed' ? 'Bienvenido a PetCare' : 'Contratar · ' + plan.name}>
     <div ref={section} className="space-y-4">
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">{error}</p>}
       {step==='profile' && <>
@@ -99,6 +103,7 @@ export default function Checkout({planIndex, plans, onIssue}) {
           <div className="sm:col-span-2"><button className={actionClass}>Continuar al checkout</button></div>
         </form>
       </>}
+      {confirmation && <CheckoutConfirmation {...confirmation} />}
       {step === 'payment' && (
         <PaymentForm
           profile={profile}

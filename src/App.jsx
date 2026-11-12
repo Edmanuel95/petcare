@@ -36,7 +36,7 @@ export default function App() {
     }
   }, [hash,isDemoRoute])
   if (planIndex >= 0) return <Checkout key={hash} planIndex={planIndex} plans={translations.es.plans.items} onIssue={(issuedPolicy, docs) => { setPolicy(issuedPolicy); setIssuedDocs(docs) }}/>
-  if (isClientRoute) return <ClientPortal section={hash === '#cliente/aventuras' ? 'adventures' : 'documents'} policy={policy} issuedDocs={issuedDocs} onClear={() => { clearPolicy(); setPolicy(null); setIssuedDocs(null) }}/>
+  if (isClientRoute) return <ClientPortal policy={policy} issuedDocs={issuedDocs} onClear={() => { clearPolicy(); setPolicy(null); setIssuedDocs(null) }}/>
   if (hash === '#veterinaria' || params.has('credencial')) return <VetPortal key={hash} policy={policy} initialToken={params.get('credencial')||''}/>
 
   return (
