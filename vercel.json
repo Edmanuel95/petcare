@@ -2,5 +2,15 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm ci"
+  "installCommand": "npm ci",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "https://reservoir-registry-side-ago.trycloudflare.com/"
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://reservoir-registry-side-ago.trycloudflare.com/:path*"
+    }
+  ]
 }
