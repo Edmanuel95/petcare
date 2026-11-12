@@ -1,12 +1,20 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "installCommand": "npm ci",
+  "framework": null,
+  "installCommand": "node --version",
+  "buildCommand": "node scripts/build-qa-proxy.mjs",
+  "outputDirectory": "qa-proxy",
   "rewrites": [
     {
       "source": "/",
-      "destination": "https://reservoir-registry-side-ago.trycloudflare.com/"
+      "destination": "https://reservoir-registry-side-ago.trycloudflare.com/index.html"
+    },
+    {
+      "source": "/portal",
+      "destination": "https://reservoir-registry-side-ago.trycloudflare.com/portal/index.html"
+    },
+    {
+      "source": "/portal/",
+      "destination": "https://reservoir-registry-side-ago.trycloudflare.com/portal/index.html"
     },
     {
       "source": "/:path*",
