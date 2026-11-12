@@ -29,6 +29,10 @@ export default function Hero({ t }) {
               <a href="#plans" className="btn-outline">{t.hero.cta2}</a>
             </div>
 
+            <div className="flex flex-wrap gap-4 fade-up-4">
+              <a href="#cliente" className="btn-outline">{t.lang === 'es' ? 'Portal del cliente' : 'Customer portal'}</a>
+            </div>
+
             <div className="flex flex-wrap gap-5 fade-up-4">
               {t.hero.trusts.map((tr, i) => (
                 <div key={i} className="flex items-center gap-2 text-sage-600 text-sm">

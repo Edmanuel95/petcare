@@ -25,7 +25,8 @@ export default function App() {
   }, [])
   const params = new URLSearchParams(hash.slice(1))
   const planIndex = planIds.indexOf(params.get('contratar'))
-  const isDemoRoute = planIndex >= 0 || hash === '#cliente' || hash === '#veterinaria' || params.has('credencial')
+  const isClientRoute = hash === '#cliente' || hash === '#cliente/aventuras'
+  const isDemoRoute = planIndex >= 0 || isClientRoute || hash === '#veterinaria' || params.has('credencial')
   useEffect(() => {
     if (isDemoRoute) {
       window.scrollTo({top:0,behavior:'instant'})
@@ -35,7 +36,7 @@ export default function App() {
     }
   }, [hash,isDemoRoute])
   if (planIndex >= 0) return <Checkout key={hash} planIndex={planIndex} plans={translations.es.plans.items} onIssue={(issuedPolicy, docs) => { setPolicy(issuedPolicy); setIssuedDocs(docs) }}/>
-  if (hash === '#cliente') return <ClientPortal policy={policy} issuedDocs={issuedDocs} onClear={() => { clearPolicy(); setPolicy(null); setIssuedDocs(null) }}/>
+  if (isClientRoute) return <ClientPortal section={hash === '#cliente/aventuras' ? 'adventures' : 'documents'} policy={policy} issuedDocs={issuedDocs} onClear={() => { clearPolicy(); setPolicy(null); setIssuedDocs(null) }}/>
   if (hash === '#veterinaria' || params.has('credencial')) return <VetPortal key={hash} policy={policy} initialToken={params.get('credencial')||''}/>
 
   return (

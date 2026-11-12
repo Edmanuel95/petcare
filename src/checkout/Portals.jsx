@@ -3,23 +3,50 @@ import { Documents, Shell } from './Checkout'
 import { actionClass, fieldClass, money } from './ui'
 import { credentialUrl, distanceMeters, resolveCredential } from './demo'
 
-export function ClientPortal({ policy, issuedDocs, onClear }) {
-  return <Shell title="Portal cliente de prueba">
-    {policy ? <div className="space-y-5">
-      <p><strong>{policy.dog}</strong> · {policy.breed} · {policy.color} · Póliza de prueba hasta {policy.expires}</p>
-      {issuedDocs && (
-        <div role="status" className="rounded-xl border border-sage-200 bg-sage-50 p-4">
-          <p className="font-semibold"><span aria-hidden="true">✓ </span>Pago de prueba aprobado</p>
-          <p className="mt-1 text-sm">{money(policy.total)} MXN · Folio {policy.policyId}</p>
-          <p className="mt-2 text-sm">Puedes volver a descargar la póliza o guardar el carnet con QR desde aquí.</p>
+export function ClientPortal({ policy, issuedDocs, section, onClear }) {
+  const showAdventures = section === 'adventures'
+
+  return (
+    <Shell title="Portal del cliente">
+      <nav aria-label="Secciones del portal" className="mb-5 flex flex-wrap gap-3">
+        <a href="#cliente" aria-current={!showAdventures ? 'page' : undefined} className={!showAdventures ? 'btn-primary' : 'btn-outline'}>
+          Mi póliza y carnet
+        </a>
+        <a href="#cliente/aventuras" aria-current={showAdventures ? 'page' : undefined} className={showAdventures ? 'btn-primary' : 'btn-outline'}>
+          Mis aventuras
+        </a>
+      </nav>
+
+      {policy ? (
+        <div className="space-y-5">
+          <p><strong>{policy.dog}</strong> · {policy.breed} · {policy.color} · Póliza de prueba hasta {policy.expires}</p>
+          <section hidden={showAdventures} aria-labelledby="client-documents">
+            <h2 id="client-documents" className="mb-3 text-xl">Mis documentos</h2>
+            {issuedDocs && (
+              <div role="status" className="mb-4 rounded-xl border border-sage-200 bg-sage-50 p-4">
+                <p className="font-semibold"><span aria-hidden="true">✓ </span>Pago de prueba aprobado</p>
+                <p className="mt-1 text-sm">{money(policy.total)} MXN · Folio {policy.policyId}</p>
+              </div>
+            )}
+            <Documents key={policy.policyId} policy={policy} initial={issuedDocs} />
+            <a className="mt-3 inline-block underline" href={credentialUrl(policy)}>Abrir el enlace de identificación del QR</a>
+            <div className="mt-5 border-t border-sage-100 pt-4">
+              <a href="#cliente/aventuras" className="btn-outline">Iniciar aventura</a>
+            </div>
+          </section>
+          <div hidden={!showAdventures}>
+            <Adventures key={policy.policyId} />
+          </div>
+          <button className="underline text-sm" onClick={onClear}>Cerrar sesión de prueba y borrar los datos de esta pestaña</button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p>Emite una póliza de prueba en esta pestaña para descargar tus documentos y registrar aventuras.</p>
+          <a className="btn-primary" href="#plans">Elegir un plan de prueba</a>
         </div>
       )}
-      <Documents key={policy.policyId} policy={policy} initial={issuedDocs} />
-      <a className="underline block" href={credentialUrl(policy)}>Abrir el enlace de identificación del QR</a>
-      <Adventures key={policy.policyId}/>
-      <button className="underline text-sm" onClick={onClear}>Cerrar sesión de prueba y borrar los datos de esta pestaña</button>
-    </div> : <p>Aún no hay una póliza en esta pestaña. <a className="underline" href="#plans">Elige un plan de prueba</a>.</p>}
-  </Shell>
+    </Shell>
+  )
 }
 
 export function VetPortal({policy,initialToken=''}) {
@@ -114,7 +141,7 @@ function Adventures() {
       }
       setError('');setPhoto(file||null)
     }}/></label>
-    {tracking ? <button className={actionClass} onClick={stop}>Terminar aventura · {meters} m</button> : <button className={actionClass} onClick={begin}>Iniciar aventura con GPS</button>}
+    {tracking ? <button className={actionClass} onClick={stop}>Terminar aventura · {meters} m</button> : <button className={actionClass} onClick={begin}>Activar GPS y empezar</button>}
     {error && <p role="status" className="text-red-800">{error}</p>}
     {walks.length>0 && <ul className="space-y-2">{walks.map(w=><li key={w.id} className="rounded-lg bg-sage-50 p-3">
       {w.minutes} min · {w.meters===null?'distancia sin señal suficiente':w.meters+' m'}
