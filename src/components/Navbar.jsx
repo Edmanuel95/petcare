@@ -16,6 +16,7 @@ export default function Navbar({ t, lang, setLang }) {
     { label: t.nav.quote,    href: '#quote'    },
     { label: t.nav.faq,      href: '#faq'      },
     { label: t.nav.contact,  href: '#footer'   },
+    { label: lang === 'es' ? 'Portal cliente' : 'Client portal', href: '#cliente' },
   ]
 
   return (
@@ -31,7 +32,7 @@ export default function Navbar({ t, lang, setLang }) {
           <a href="#" className="flex items-center gap-2 group">
             <span className="text-2xl group-hover:scale-110 transition-transform">🐾</span>
             <div className="leading-none">
-              <span className="font-display text-sage-800 font-bold text-lg">Mari Diana Edwin Confidential</span>
+              <span className="font-display text-sage-800 font-bold text-lg">PetCare</span>
               <span className="text-sage-500 text-xs block tracking-widest uppercase">Seguro</span>
             </div>
           </a>

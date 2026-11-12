@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { planIds } from '../checkout/demo'
 
 // ── Actuarial recommendation engine ──────────────────────────
 // Based on PDF: freq 22%, severity $9,500 MXN, age risk factors
@@ -68,7 +69,7 @@ export default function Quoter({ t }) {
             <div>
               <label className="block text-sage-700 font-semibold text-sm mb-4">{q.pLabel}</label>
               <div className="flex flex-col gap-3">
-                {q.pets.map(o => (
+                {q.pets.filter(o=>o.k==='dog').map(o => (
                   <SelectBtn key={o.k} active={petType === o.k} onClick={() => setPetType(o.k)}>
                     <span className="flex items-center gap-3">
                       <span className="text-2xl">{o.l.split(' ')[0]}</span>
@@ -84,7 +85,7 @@ export default function Quoter({ t }) {
               <label className="block text-sage-700 font-semibold text-sm mb-4">{q.aLabel}</label>
               <div className="flex flex-col gap-2">
                 {q.ages.map(o => (
-                  <SelectBtn key={o.k} active={ageKey === o.k} onClick={() => setAgeKey(o.k)}>
+                  <SelectBtn key={o.k} active={ageKey === o.k} onClick={() => (setAgeKey(o.k), setResult(null))}>
                     {o.l}
                   </SelectBtn>
                 ))}
@@ -96,7 +97,7 @@ export default function Quoter({ t }) {
               <label className="block text-sage-700 font-semibold text-sm mb-4">{q.bLabel}</label>
               <div className="flex flex-col gap-3">
                 {q.budgets.map(o => (
-                  <SelectBtn key={o.k} active={budget === o.k} onClick={() => setBudget(o.k)}>
+                  <SelectBtn key={o.k} active={budget === o.k} onClick={() => (setBudget(o.k), setResult(null))}>
                     {o.l}
                   </SelectBtn>
                 ))}
@@ -136,7 +137,7 @@ export default function Quoter({ t }) {
                 </div>
                 <p className="text-sage-400 text-xs">{q.resultSub}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-                  <a href="#plans"
+                  <a href={'#contratar='+planIds[result.planIdx]}
                     className="bg-amber-400 hover:bg-amber-500 text-white font-semibold px-8 py-3 rounded-full transition-colors">
                     {q.contractBtn}
                   </a>

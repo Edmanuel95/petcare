@@ -1,3 +1,5 @@
+import { planIds } from '../checkout/demo'
+
 export default function Plans({ t }) {
   return (
     <section id="plans" className="py-20 bg-white">
@@ -11,6 +13,7 @@ export default function Plans({ t }) {
             {t.plans.title}
           </h2>
           <p className="text-sage-600 text-lg font-light leading-relaxed">{t.plans.sub}</p>
+          <p className="mt-3 font-semibold text-sage-700">{t.lang === 'es' ? 'Planes y precios ilustrativos. Sin cobros ni cobertura real.' : 'Illustrative plans and prices. No real charges or coverage.'}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -75,7 +78,7 @@ export default function Plans({ t }) {
                   ))}
                 </ul>
 
-                <a href="#quote"
+                <a href={'#contratar='+planIds[i]}
                   className={`block text-center py-3 rounded-full font-semibold transition-all duration-200 ${
                     plan.featured
                       ? 'bg-amber-400 hover:bg-amber-500 text-white shadow-lg hover:shadow-xl'

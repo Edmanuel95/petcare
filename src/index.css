@@ -79,3 +79,5 @@
 .fade-up-2 { animation: fadeUp 0.8s 0.15s ease both; }
 .fade-up-3 { animation: fadeUp 0.8s 0.30s ease both; }
 .fade-up-4 { animation: fadeUp 0.8s 0.45s ease both; }
+
+#plans { scroll-margin-top: 4rem; }
